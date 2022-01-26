@@ -47,7 +47,7 @@ import lcm
 from time import perf_counter
 from system.protocol import user_commands_t, controller_states_t, plant_states_t
 from multiprocessing import Process, Manager
-from system.parameters import STATE_DIM, OUTPUT_DIM, INPUT_DIM, MEASUREMENTS_DIM, USER_INPUT_DIM
+from system.parameters import STATE_DIM, OUTPUT_DIM, INPUT_DIM, MEASUREMENTS_DIM, USER_INPUT_DIM, CONTROLLER_CHANEL, USER_CHANNEL, PLANT_CHANNEL
 
 
 # TODO:
@@ -76,10 +76,12 @@ class ControlUnit:
         self.address = address
         # Initialize LCM
         self.lcm_node = lcm.LCM(self.address)
+        
         # Define channels
-        self.user_channel = "user"
-        self.controller_channel = "controller"
-        self.plant_channel = "plant"
+        self.user_channel = USER_CHANNEL
+        self.controller_channel = CONTROLLER_CHANEL
+        self.plant_channel = PLANT_CHANNEL
+
         # Initiate the messages
         self.controller_message = controller_states_t()
         self.plant_message = plant_states_t()

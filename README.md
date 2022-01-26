@@ -1,2 +1,2 @@
-# lw_cw
+# LWCW-Py
 The light weight parallel control workspace 

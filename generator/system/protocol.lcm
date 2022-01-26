@@ -1,0 +1,32 @@
+package protocol;
+
+struct user_commands_t
+{ 
+    int16_t  mode;
+    int64_t  timestamp; 
+    double   user_inputs[INPUT_DIM];
+    double   desired_state[2];
+    double   desired_outputs[1];    
+    // The commands to add
+}
+
+struct controller_states_t
+{
+    int64_t  timestamp;
+    double   state[2];
+    double   state_estimates[2];
+    double   output[1];
+    double   input[1];
+    string   plant_name;
+    bool     active;
+    // The additional states to add
+}
+
+struct plant_states_t
+{
+    int64_t timestamp; 
+    int16_t  mode;
+    double   measurements[1];
+    int32_t error_code;
+    // The commands to add
+}

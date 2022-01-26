@@ -4,7 +4,7 @@ struct user_commands_t
 { 
     int16_t  mode;
     int64_t  timestamp; 
-    double   user_inputs[INPUT_DIM];
+    double   user_inputs[3];
     double   desired_state[2];
     double   desired_outputs[1];    
     // The commands to add
@@ -13,7 +13,6 @@ struct user_commands_t
 struct controller_states_t
 {
     int64_t  timestamp;
-    double   state[2];
     double   state_estimates[2];
     double   output[1];
     double   input[1];

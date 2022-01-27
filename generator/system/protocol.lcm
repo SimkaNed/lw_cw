@@ -1,10 +1,10 @@
 package protocol;
 
 struct user_commands_t
-{ 
-    int16_t  mode;
+{
     int64_t  timestamp; 
-    double   user_inputs[3];
+    int16_t  mode;
+    double   user_inputs[6];
     double   desired_state[2];
     double   desired_outputs[1];    
     // The commands to add
@@ -13,19 +13,21 @@ struct user_commands_t
 struct controller_states_t
 {
     int64_t  timestamp;
-    double   state_estimates[2];
-    double   output[1];
-    double   input[1];
+    int16_t  mode;
+    double   estimated_states[2];
+    double   reference_state[2];
+    double   reference_control[1];
+    double   control[1];
     string   plant_name;
-    bool     active;
+    boolean     active;
     // The additional states to add
 }
 
 struct plant_states_t
 {
     int64_t timestamp; 
-    int16_t  mode;
-    double   measurements[1];
+    double   measurements[4];
+    double   plant_output[2];
     int32_t error_code;
     // The commands to add
 }

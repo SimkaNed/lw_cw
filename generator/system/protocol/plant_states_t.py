@@ -10,16 +10,16 @@ except ImportError:
 import struct
 
 class plant_states_t(object):
-    __slots__ = ["timestamp", "mode", "measurements", "error_code"]
+    __slots__ = ["timestamp", "measurements", "plant_output", "error_code"]
 
-    __typenames__ = ["int64_t", "int16_t", "double", "int32_t"]
+    __typenames__ = ["int64_t", "double", "double", "int32_t"]
 
-    __dimensions__ = [None, None, [1], None]
+    __dimensions__ = [None, [4], [2], None]
 
     def __init__(self):
         self.timestamp = 0
-        self.mode = 0
-        self.measurements = [ 0.0 for dim0 in range(1) ]
+        self.measurements = [ 0.0 for dim0 in range(4) ]
+        self.plant_output = [ 0.0 for dim0 in range(2) ]
         self.error_code = 0
 
     def encode(self):
@@ -29,8 +29,9 @@ class plant_states_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qh", self.timestamp, self.mode))
-        buf.write(struct.pack('>1d', *self.measurements[:1]))
+        buf.write(struct.pack(">q", self.timestamp))
+        buf.write(struct.pack('>4d', *self.measurements[:4]))
+        buf.write(struct.pack('>2d', *self.plant_output[:2]))
         buf.write(struct.pack(">i", self.error_code))
 
     def decode(data):
@@ -45,15 +46,16 @@ class plant_states_t(object):
 
     def _decode_one(buf):
         self = plant_states_t()
-        self.timestamp, self.mode = struct.unpack(">qh", buf.read(10))
-        self.measurements = struct.unpack('>1d', buf.read(8))
+        self.timestamp = struct.unpack(">q", buf.read(8))[0]
+        self.measurements = struct.unpack('>4d', buf.read(32))
+        self.plant_output = struct.unpack('>2d', buf.read(16))
         self.error_code = struct.unpack(">i", buf.read(4))[0]
         return self
     _decode_one = staticmethod(_decode_one)
 
     def _get_hash_recursive(parents):
         if plant_states_t in parents: return 0
-        tmphash = (0xa694a3e8aff1dac1) & 0xffffffffffffffff
+        tmphash = (0xbb6613839ffb44f4) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

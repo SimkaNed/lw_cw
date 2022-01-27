@@ -9,22 +9,22 @@ except ImportError:
     from io import BytesIO
 import struct
 
-import protocol.bool
-
 class controller_states_t(object):
-    __slots__ = ["timestamp", "state_estimates", "output", "input", "plant_name", "active"]
+    __slots__ = ["timestamp", "mode", "estimated_states", "reference_state", "reference_control", "control", "plant_name", "active"]
 
-    __typenames__ = ["int64_t", "double", "double", "double", "string", "protocol.bool"]
+    __typenames__ = ["int64_t", "int16_t", "double", "double", "double", "double", "string", "boolean"]
 
-    __dimensions__ = [None, [2], [1], [1], None, None]
+    __dimensions__ = [None, None, [2], [2], [1], [1], None, None]
 
     def __init__(self):
         self.timestamp = 0
-        self.state_estimates = [ 0.0 for dim0 in range(2) ]
-        self.output = [ 0.0 for dim0 in range(1) ]
-        self.input = [ 0.0 for dim0 in range(1) ]
+        self.mode = 0
+        self.estimated_states = [ 0.0 for dim0 in range(2) ]
+        self.reference_state = [ 0.0 for dim0 in range(2) ]
+        self.reference_control = [ 0.0 for dim0 in range(1) ]
+        self.control = [ 0.0 for dim0 in range(1) ]
         self.plant_name = ""
-        self.active = protocol.bool()
+        self.active = False
 
     def encode(self):
         buf = BytesIO()
@@ -33,16 +33,16 @@ class controller_states_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">q", self.timestamp))
-        buf.write(struct.pack('>2d', *self.state_estimates[:2]))
-        buf.write(struct.pack('>1d', *self.output[:1]))
-        buf.write(struct.pack('>1d', *self.input[:1]))
+        buf.write(struct.pack(">qh", self.timestamp, self.mode))
+        buf.write(struct.pack('>2d', *self.estimated_states[:2]))
+        buf.write(struct.pack('>2d', *self.reference_state[:2]))
+        buf.write(struct.pack('>1d', *self.reference_control[:1]))
+        buf.write(struct.pack('>1d', *self.control[:1]))
         __plant_name_encoded = self.plant_name.encode('utf-8')
         buf.write(struct.pack('>I', len(__plant_name_encoded)+1))
         buf.write(__plant_name_encoded)
         buf.write(b"\0")
-        assert self.active._get_packed_fingerprint() == protocol.bool._get_packed_fingerprint()
-        self.active._encode_one(buf)
+        buf.write(struct.pack(">b", self.active))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -56,20 +56,20 @@ class controller_states_t(object):
 
     def _decode_one(buf):
         self = controller_states_t()
-        self.timestamp = struct.unpack(">q", buf.read(8))[0]
-        self.state_estimates = struct.unpack('>2d', buf.read(16))
-        self.output = struct.unpack('>1d', buf.read(8))
-        self.input = struct.unpack('>1d', buf.read(8))
+        self.timestamp, self.mode = struct.unpack(">qh", buf.read(10))
+        self.estimated_states = struct.unpack('>2d', buf.read(16))
+        self.reference_state = struct.unpack('>2d', buf.read(16))
+        self.reference_control = struct.unpack('>1d', buf.read(8))
+        self.control = struct.unpack('>1d', buf.read(8))
         __plant_name_len = struct.unpack('>I', buf.read(4))[0]
         self.plant_name = buf.read(__plant_name_len)[:-1].decode('utf-8', 'replace')
-        self.active = protocol.bool._decode_one(buf)
+        self.active = bool(struct.unpack('b', buf.read(1))[0])
         return self
     _decode_one = staticmethod(_decode_one)
 
     def _get_hash_recursive(parents):
         if controller_states_t in parents: return 0
-        newparents = parents + [controller_states_t]
-        tmphash = (0x17725882981b0d3+ protocol.bool._get_hash_recursive(newparents)) & 0xffffffffffffffff
+        tmphash = (0x2493cb5066dab85) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
